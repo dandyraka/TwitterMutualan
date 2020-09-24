@@ -17,6 +17,7 @@ client.get("account/verify_credentials")
         if (e.errors[0].code) console.log(color('[ERROR]', 'red'), e.errors[0].message) 
         process.exit(1)
     })
+    .catch(error => error);
 
 const isMutual = (tweet) => {
     return tweet.match(new RegExp(/(mutual(an)?)/g));
@@ -29,7 +30,7 @@ const isIgnored = (tweet) => {
 async function getTweets(userlist) {
     for (const user of userlist) {
         try {
-            const tweets = await client.get("statuses/user_timeline", { screen_name: user, count: 1 })
+            const tweets = await client.get("statuses/user_timeline", { screen_name: user, count: 1 }).catch(error => error);
             const tweetID = tweets[0].id_str
             const tweetText = tweets[0].text
             const isSaved = await db.findTweet(tweetID)
@@ -41,7 +42,7 @@ async function getTweets(userlist) {
 
                 if (isIgnored(tweetText)) console.log(color('[IGNORED]', 'red'), 'Mengandung kata cringe')
 
-                const doRetweet = await client.post("statuses/retweet/" + tweetID)
+                const doRetweet = await client.post("statuses/retweet/" + tweetID).catch(error => error);
                 if (doRetweet.retweeted) console.log(color('[RETWEETED]', 'green'), '=>', color(tweetID))
             } else {
                 console.log(color('[MUTUAL_NOTFOUND]', 'red'), 'on', color(user, 'yellow'))
@@ -65,8 +66,9 @@ async function retweeters() {
         const tweet = await db.getAllTweet()
         tweet.forEach(async (tweets) => {
             const tweetID = tweets.id
-            const get_retweeters = await client.get("statuses/retweeters/ids", { id: tweetID });
-            get_retweeters.ids.forEach(async function (retweeterID) {
+            const get_retweeters = await client.get("statuses/retweets/" + tweetID).catch(error => error);
+            get_retweeters.forEach(async function (retweetersID) {
+                const retweeterID = retweetersID.user.id_str
                 const isSaved = await db.findUser(retweeterID)
                 if (!isSaved) await db.addUser(retweeterID, 'belum')
             })
@@ -81,11 +83,11 @@ async function follow() {
     try {
         const usersToFollow = await db.filterUser('belum')
         usersToFollow.forEach(async (user) => {
-            const userCheck = await client.post("users/lookup", { user_id: user.id });
+            const userCheck = await client.post("users/lookup", { user_id: user.id }).catch(error => error);
             if (userCheck.errors) {
                 await db.updateUserStatus(user.id, 'error')
             } else {
-                const doFollow = await client.post("friendships/create", { user_id: user.id });
+                const doFollow = await client.post("friendships/create", { user_id: user.id }).catch(error => error);
                 if (!doFollow.errors) {
                     await db.updateUserStatus(user.id, 'success')
                     console.log(color('[FOLLOWED]', 'green'), '=>', color(doFollow.screen_name))
@@ -110,6 +112,7 @@ const listUser = [
     'sqwfess'
 ];
 getTweets(listUser)
+retweeters()
 follow()
 
 cron.schedule('*/5 * * * *', () => {
