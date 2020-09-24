@@ -108,7 +108,9 @@ const listUser = [
     'sygfess',
     'spongebobmnfess',
     'bacotfess',
-    'sqwfess'
+    'sqwfess',
+    'mutuaifess',
+    'mutualanbase'
 ];
 getTweets(listUser)
 retweeters()
@@ -119,7 +121,7 @@ cron.schedule('*/5 * * * *', () => {
     getTweets(listUser)
 });
 
-cron.schedule('*/3 * * * *', () => {
+cron.schedule('*/40 * * * *', () => {
     console.log(color('=== AUTO FOLLOW RETWEET ===', 'green'))
     follow()
 });
