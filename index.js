@@ -1,17 +1,7 @@
 const Twitter = require('twitter-lite');
-const low = require('lowdb')
-const FileSync = require('lowdb/adapters/FileSync')
 const cron = require('node-cron');
-const color = require('./color')
-
-const adapter = new FileSync('db.json')
-const db = low(adapter)
-
-const dbfoll = new FileSync('db_follow.json')
-const dbf = low(dbfoll)
-
-db.defaults({ tweet: []}).write()
-dbf.defaults({ user: []}).write()
+const color = require('./utils/color');
+const db = require('./db');
 
 const client = new Twitter({
     subdomain: "api", // "api" is the default (change for other subdomains)
@@ -22,97 +12,90 @@ const client = new Twitter({
     access_token_secret: "XXX" // from your User (oauth_token_secret)
 });
 
-const prefix = /(mutual(an)?)/g;
-const prefix_ignore = /kpop|korea|stan|ig|drop|link|ig|army/g;
+client.get("account/verify_credentials")
+    .catch((e) => {
+        if (e.errors[0].code) console.log(color('[ERROR]', 'red'), e.errors[0].message) 
+        process.exit(1)
+    })
 
-async function getTweets(usernya) {
-    for (const user of usernya) {
+const isMutual = (tweet) => {
+    return tweet.match(new RegExp(/(mutual(an)?)/g));
+}
+
+const isIgnored = (tweet) => {
+    return tweet.match(new RegExp(/kpop|korea|stan|ig|drop|link|ig|army/g));
+}
+
+async function getTweets(userlist) {
+    for (const user of userlist) {
         try {
-            const gtwt = await client.get("statuses/user_timeline", {
-                screen_name: user,
-                count: 1
-            }).catch(error => error);
+            const tweets = await client.get("statuses/user_timeline", { screen_name: user, count: 1 })
+            const tweetID = tweets[0].id_str
+            const tweetText = tweets[0].text
+            const isSaved = await db.findTweet(tweetID)
 
-            const tweetIDnya = gtwt[0].id_str
-            const tweetnya = gtwt[0].text
+            if (isSaved) console.log(color('[ALREADY_RETWEETED]', 'red'), '=>', color(tweetID))
+            if (isMutual(tweetText)) {
+                await db.addTweet(tweetID)
+                console.log(color('[MUTUAL_FOUND]', 'green'), 'on', color(user, 'yellow'))
 
-            const isSaved = db.get('tweet').find({ id: tweetIDnya }).value()
-            if(isSaved){
-                console.log(color('[ALREADY_RETWEETED]', 'red'), '=>', color(tweetIDnya))
+                if (isIgnored(tweetText)) console.log(color('[IGNORED]', 'red'), 'Mengandung kata cringe')
+
+                const doRetweet = await client.post("statuses/retweet/" + tweetID)
+                if (doRetweet.retweeted) console.log(color('[RETWEETED]', 'green'), '=>', color(tweetID))
             } else {
-                if(prefix.test(tweetnya)){
-                    db.get('tweet').push({ id: tweetIDnya}).write()
-                    console.log(color('[MUTUAL_FOUND]', 'green'), 'on', color(user, 'yellow'))
-    
-                    if(prefix_ignore.test(tweetnya)){
-                        console.log(color('[IGNORE]', 'red'), 'Mengandung kata cringe')
-                    } else {
-                        const ngretweet = await client.post("statuses/retweet/" + tweetIDnya).catch(error => error);
-                        if(ngretweet.retweeted){
-                            console.log(color('[RETWEETED]', 'green'), '=>', color(tweetIDnya))
-                        }
-                    }
-                } else {
-                    console.log(color('[MUTUAL_NOTFOUND]', 'red'), 'on', color(user, 'yellow'))
-                }
+                console.log(color('[MUTUAL_NOTFOUND]', 'red'), 'on', color(user, 'yellow'))
             }
 
         } catch (e) {
             if ('errors' in e) {
                 // Twitter API error
-                if (e.errors[0].code === 88)
-                  // rate limit exceeded
-                  console.log(color('[ERROR]', 'red'), "Rate limit will reset on", new Date(e._headers.get("x-rate-limit-reset") * 1000))
-                  //console.log("Rate limit will reset on", new Date(e._headers.get("x-rate-limit-reset") * 1000));
-                  // some other kind of error, e.g. read-only API trying to POST
+                if (e.errors[0].code === 88) return console.log(color('[ERROR]', 'red'), "Rate limit will reset on", new Date(e._headers.get("x-rate-limit-reset") * 1000))
+                if (e.errors[0].code) return console.log(color('[ERROR]', 'red'), e.errors[0].message)
             } else {
                 // non-API error, e.g. network problem or invalid JSON in response
+                console.log(color('[ERROR]', 'red'), e)
             }
         }
     }
 }
 
 async function retweeters() {
-    const Twitt = db.get('tweet').value()
-    Twitt.forEach(async (Twtts) => {
-        const twitID = Twtts.id
-
-        try {
-            const get_retweeters = await client.get("statuses/retweeters/ids", {
-                id: twitID
-            }).catch(error => error);
-            const retweeters = get_retweeters.ids
-            retweeters.forEach(async function(item) {
-                const isSaved = dbf.get('user').find({ id: item }).value()
-                if(!isSaved){
-                    dbf.get('user').push({ id: item, status: 'belum'}).write()
-                }
+    try {
+        const tweet = await db.getAllTweet()
+        tweet.forEach(async (tweets) => {
+            const tweetID = tweets.id
+            const get_retweeters = await client.get("statuses/retweeters/ids", { id: tweetID });
+            get_retweeters.ids.forEach(async function (retweeterID) {
+                const isSaved = await db.findUser(retweeterID)
+                if (!isSaved) await db.addUser(retweeterID, 'belum')
             })
-        } catch (e) {
-            console.log(color('[ERROR]', 'red'), e)
-        }
-        
-    });
+        });
+    } catch (e) {
+        console.log(color('[ERROR]', 'red'), e)
+    }
+
 }
 
-async function ngfollow() {
-    const UserTF = dbf.get('user').filter({status: 'belum'}).take(10).value()
-    UserTF.forEach(async (UsersTF) => {
-        const ngcekUser = await client.post("users/lookup", {
-            user_id: UsersTF.id
-        }).catch(error => error);
-        if(ngcekUser.errors){
-            dbf.get('user').find({ id: UsersTF.id }).assign({ status: 'user error'}).write()
-        } else {
-            const ngefolow = await client.post("friendships/create", {
-                user_id: UsersTF.id
-            }).catch(error => error);
-            if(!ngefolow.errors){
-                dbf.get('user').find({ id: UsersTF.id }).assign({ status: 'sudah'}).write()
-                console.log(color('[FOLLOWED]', 'green'), '=>', color(ngefolow.screen_name))
+async function follow() {
+    try {
+        const usersToFollow = await db.filterUser('belum')
+        usersToFollow.forEach(async (user) => {
+            const userCheck = await client.post("users/lookup", { user_id: user.id });
+            if (userCheck.errors) {
+                await db.updateUserStatus(user.id, 'error')
+            } else {
+                const doFollow = await client.post("friendships/create", { user_id: user.id });
+                if (!doFollow.errors) {
+                    await db.updateUserStatus(user.id, 'success')
+                    console.log(color('[FOLLOWED]', 'green'), '=>', color(doFollow.screen_name))
+                }
             }
-        }
-    });
+        });
+    } catch (e) {
+        console.log(color('[ERROR]', 'red'), e)
+    }
+
 }
 
 const listUser = [
@@ -127,7 +110,7 @@ const listUser = [
     'sqwfess'
 ];
 getTweets(listUser)
-ngfollow()
+follow()
 
 cron.schedule('*/5 * * * *', () => {
     console.log(color('=== FIND MUTUAL BASE ===', 'green'))
@@ -136,19 +119,16 @@ cron.schedule('*/5 * * * *', () => {
 
 cron.schedule('*/3 * * * *', () => {
     console.log(color('=== AUTO FOLLOW RETWEET ===', 'green'))
-    ngfollow()
+    follow()
 });
 
-cron.schedule('*/10 * * * *', () => {
+cron.schedule('*/10 * * * *', async () => {
     console.log(color('=== RESET DATABASE ===', 'green'))
     //Unretweet
-    const listRT = db.get('tweet').value()
-    listRT.forEach(async (ListsRT) => {
-        const idRT = ListsRT.id
-        await client.post("statuses/unretweet/" + idRT).catch(error => error);
-    });
+    const retweetList = await db.getAllTweet()
+    retweetList.forEach(async (retweets) => await client.post("statuses/unretweet/" + retweets.id).catch(error => error));
     
-    db.set('tweet', []).write()
-    dbf.get('user').remove({ status: "user error" }).write()
+    await db.clearAllTweet()
+    await db.removeUserByStatus("error")
     retweeters()
 });
