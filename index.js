@@ -7,7 +7,11 @@ const color = require('./color')
 const adapter = new FileSync('db.json')
 const db = low(adapter)
 
+const dbfoll = new FileSync('db_follow.json')
+const dbf = low(dbfoll)
+
 db.defaults({ tweet: []}).write()
+dbf.defaults({ user: []}).write()
 
 const client = new Twitter({
     subdomain: "api", // "api" is the default (change for other subdomains)
@@ -19,7 +23,7 @@ const client = new Twitter({
 });
 
 const prefix = /(mutual(an)?)/g;
-const prefix_ignore = /kpop|korea/g;
+const prefix_ignore = /kpop|korea|stan|ig|drop|link|ig|army/g;
 
 async function getTweets(usernya) {
     for (const user of usernya) {
@@ -35,21 +39,6 @@ async function getTweets(usernya) {
             const isSaved = db.get('tweet').find({ id: tweetIDnya }).value()
             if(isSaved){
                 console.log(color('[ALREADY_RETWEETED]', 'red'), '=>', color(tweetIDnya))
-
-                /*const get_retweeters = await client.get("statuses/retweeters/ids", {
-                    id: tweetIDnya,
-                    count: 5
-                }).catch(error => error);
-                const retweeters = get_retweeters.ids
-                retweeters.forEach(async function(item) {
-                    const ngefolow = await client.post("friendships/create", {
-                        user_id: item
-                    }).catch(error => error);
-
-                    if(ngefolow.following || ngefolow.follow_request_sent){
-                        console.log(color('[FOLLOWERD]', 'green'), '=>', color(item))
-                    }
-                })*/
             } else {
                 if(prefix.test(tweetnya)){
                     db.get('tweet').push({ id: tweetIDnya}).write()
@@ -76,24 +65,90 @@ async function getTweets(usernya) {
                   console.log(color('[ERROR]', 'red'), "Rate limit will reset on", new Date(e._headers.get("x-rate-limit-reset") * 1000))
                   //console.log("Rate limit will reset on", new Date(e._headers.get("x-rate-limit-reset") * 1000));
                   // some other kind of error, e.g. read-only API trying to POST
-              } else {
+            } else {
                 // non-API error, e.g. network problem or invalid JSON in response
-              }
+            }
         }
     }
 }
 
-const listUser = ["subtanyarl", "MUTUALANDFESS", 'menfesssyg', 'subtanyarl2', 'sygfess'];
+async function retweeters() {
+    const Twitt = db.get('tweet').value()
+    Twitt.forEach(async (Twtts) => {
+        const twitID = Twtts.id
+
+        try {
+            const get_retweeters = await client.get("statuses/retweeters/ids", {
+                id: twitID
+            }).catch(error => error);
+            const retweeters = get_retweeters.ids
+            retweeters.forEach(async function(item) {
+                const isSaved = dbf.get('user').find({ id: item }).value()
+                if(!isSaved){
+                    dbf.get('user').push({ id: item, status: 'belum'}).write()
+                }
+            })
+        } catch (e) {
+            console.log(color('[ERROR]', 'red'), e)
+        }
+        
+    });
+}
+
+async function ngfollow() {
+    const UserTF = dbf.get('user').filter({status: 'belum'}).take(10).value()
+    UserTF.forEach(async (UsersTF) => {
+        const ngcekUser = await client.post("users/lookup", {
+            user_id: UsersTF.id
+        }).catch(error => error);
+        if(ngcekUser.errors){
+            dbf.get('user').find({ id: UsersTF.id }).assign({ status: 'user error'}).write()
+        } else {
+            const ngefolow = await client.post("friendships/create", {
+                user_id: UsersTF.id
+            }).catch(error => error);
+            if(!ngefolow.errors){
+                dbf.get('user').find({ id: UsersTF.id }).assign({ status: 'sudah'}).write()
+                console.log(color('[FOLLOWED]', 'green'), '=>', color(ngefolow.screen_name))
+            }
+        }
+    });
+}
+
+const listUser = [
+    "subtanyarl", 
+    "MUTUALANDFESS", 
+    'menfesssyg', 
+    'subtanyarl2', 
+    'sygfess',
+    'spongebobmnfess',
+    'menfesssyg',
+    'bacotfess',
+    'sqwfess'
+];
 getTweets(listUser)
+ngfollow()
+
 cron.schedule('*/5 * * * *', () => {
-    //const listUser = ["subtanyarl", "MUTUALANDFESS", 'menfesssyg', 'subtanyarl2'];
+    console.log(color('=== FIND MUTUAL BASE ===', 'green'))
     getTweets(listUser)
 });
 
+cron.schedule('*/3 * * * *', () => {
+    console.log(color('=== AUTO FOLLOW RETWEET ===', 'green'))
+    ngfollow()
+});
 
-/*const cekStatus = async function(idne) {
-    let result = await client.post("statuses/retweet/" + idne).catch(error => error);
-    console.log(result);
-}
-
-cekStatus('1308810179786412032')*/
+cron.schedule('*/10 * * * *', () => {
+    console.log(color('=== RESET DATABASE ===', 'green'))
+    //Unretweet
+    const listRT = db.get('tweet').value()
+    listRT.forEach(async (ListsRT) => {
+        const idRT = ListsRT.id
+        await client.post("statuses/unretweet/" + idRT).catch(error => error);
+    });
+    
+    db.set('tweet', []).write()
+    dbf.get('user').remove({ status: "user error" }).write()
+    retweeters()
+});
