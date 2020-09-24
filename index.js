@@ -3,6 +3,8 @@ const cron = require('node-cron');
 const color = require('./utils/color');
 const db = require('./db');
 
+const autoFollow = true; // true = on | false = off
+
 const client = new Twitter({
     subdomain: "api", // "api" is the default (change for other subdomains)
     version: "1.1", // version "1.1" is the default (change for other subdomains)
@@ -113,18 +115,20 @@ const listUser = [
     'mutualanbase'
 ];
 getTweets(listUser)
-retweeters()
-follow()
+autoFollow ? retweeters() : ''
+autoFollow ? follow() : ''
 
 cron.schedule('*/5 * * * *', () => {
     console.log(color('=== FIND MUTUAL BASE ===', 'green'))
     getTweets(listUser)
 });
 
-cron.schedule('*/40 * * * *', () => {
-    console.log(color('=== AUTO FOLLOW RETWEET ===', 'green'))
-    follow()
-});
+if (autoFollow) {
+    cron.schedule('*/40 * * * *', () => {
+        console.log(color('=== AUTO FOLLOW RETWEET ===', 'green'))
+        follow()
+    });
+}
 
 cron.schedule('*/10 * * * *', async () => {
     console.log(color('=== RESET DATABASE ===', 'green'))
@@ -133,6 +137,8 @@ cron.schedule('*/10 * * * *', async () => {
     retweetList.forEach(async (retweets) => await client.post("statuses/unretweet/" + retweets.id).catch(error => error));
     
     await db.clearAllTweet()
-    await db.removeUserByStatus("error")
-    retweeters()
+    if (autoFollow) {
+        await db.removeUserByStatus("error")
+        retweeters()
+    }
 });
