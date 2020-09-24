@@ -18,6 +18,7 @@ const findTweet = (tweetID) => new Promise((resolve, reject) => {
     if (!findRecords) {
         resolve(findRecords)
     } else {
+        console.log('[DB] Find Tweet by tweetID:', tweetID)
         resolve(findRecords)
     }
 })
@@ -30,7 +31,7 @@ const addTweet = (tweetID) => new Promise((resolve, reject) => {
     if (!insertRecords) {
         reject('[DB] Error!', insertRecords)
     } else {
-        console.log('[DB] Insert Admin: ', number)
+        console.log('[DB] Add Tweet:', tweetID)
         resolve(insertRecords)
     }
 })
@@ -43,7 +44,7 @@ const getAllTweet = () => new Promise((resolve, reject) => {
     if (!allRecords) {
         reject('[DB] Error!', allRecords)
     } else {
-        // console.log('[DB] Get All Admin')
+        console.log('[DB] Get All Tweet')
         resolve(allRecords)
     }
 })
@@ -55,7 +56,7 @@ const clearAllTweet = () => new Promise((resolve, reject) => {
     if (!allRecords) {
         reject('[DB] Error!', allRecords)
     } else {
-        // console.log('[DB] Get All Admin')
+        console.log('[DB] Clear All Tweet')
         resolve(allRecords)
     }
 })
@@ -69,6 +70,7 @@ const findUser = (userID) => new Promise((resolve, reject) => {
     if (!findRecords) {
         resolve(findRecords)
     } else {
+        console.log('[DB] Find User by UserId: ', userID)
         resolve(findRecords)
     }
 })
@@ -81,7 +83,7 @@ const addUser = (userID, status) => new Promise((resolve, reject) => {
     if (!insertRecords) {
         reject('[DB] Error!', insertRecords)
     } else {
-        console.log('[DB] Insert Admin: ', number)
+        console.log('[DB] Add UserId: ', userID, 'Status:', status)
         resolve(insertRecords)
     }
 })
@@ -95,7 +97,7 @@ const updateUserStatus = (userID, status) => new Promise((resolve, reject) => {
     if (!insertRecords) {
         reject('[DB] Error!', insertRecords)
     } else {
-        console.log('[DB] Insert Admin: ', number)
+        console.log('[DB] Update Status UserId:', userID, 'to', status)
         resolve(insertRecords)
     }
 })
@@ -109,7 +111,7 @@ const filterUser= (status) => new Promise((resolve, reject) => {
     if (!allRecords) {
         reject('[DB] Error!', allRecords)
     } else {
-        // console.log('[DB] Get All Admin')
+        console.log('[DB] Filter User by Status:', status)
         resolve(allRecords)
     }
 })
@@ -122,7 +124,7 @@ const removeUserByStatus= (status) => new Promise((resolve, reject) => {
     if (!allRecords) {
         reject('[DB] Error!', allRecords)
     } else {
-        // console.log('[DB] Get All Admin')
+        console.log('[DB] Remove User By Status:', status)
         resolve(allRecords)
     }
 })
@@ -135,7 +137,7 @@ const getAllUser= () => new Promise((resolve, reject) => {
     if (!allRecords) {
         reject('[DB] Error!', allRecords)
     } else {
-        // console.log('[DB] Get All Admin')
+        console.log('[DB] Get All User')
         resolve(allRecords)
     }
 })
