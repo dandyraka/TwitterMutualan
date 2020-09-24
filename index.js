@@ -117,12 +117,12 @@ async function ngfollow() {
 
 const listUser = [
     "subtanyarl", 
-    "MUTUALANDFESS", 
+    "MUTUALANDFESS",
+    "MUTUALANDFESS1",
     'menfesssyg', 
     'subtanyarl2', 
     'sygfess',
     'spongebobmnfess',
-    'menfesssyg',
     'bacotfess',
     'sqwfess'
 ];
