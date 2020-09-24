@@ -17,7 +17,6 @@ client.get("account/verify_credentials")
         if (e.errors[0].code) console.log(color('[ERROR]', 'red'), e.errors[0].message) 
         process.exit(1)
     })
-    .catch(error => error);
 
 const isMutual = (tweet) => {
     return tweet.match(new RegExp(/(mutual(an)?)/g));
