@@ -18,6 +18,20 @@ Install the dependencies:
 > npm install
 ```
 
+User authentication requires:
+- `consumer_key`
+- `consumer_secret`
+- `access_token_key`
+- `access_token_secret`
+
+Get it on [https://apps.twitter.com/](https://apps.twitter.com), put in index.js
+```
+consumer_key: "HERE",
+consumer_secret: "HERE",
+access_token_key: "HERE",
+access_token_secret: "HERE"
+```
+
 Usage
 ```bash
 > npm start
