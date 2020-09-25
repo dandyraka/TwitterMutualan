@@ -2,16 +2,17 @@ const Twitter = require('twitter-lite');
 const cron = require('node-cron');
 const color = require('./utils/color');
 const db = require('./db');
+require('dotenv').config()
 
 const autoFollow = true; // true = on | false = off
 
 const client = new Twitter({
     subdomain: "api", // "api" is the default (change for other subdomains)
     version: "1.1", // version "1.1" is the default (change for other subdomains)
-    consumer_key: "XXX", // from Twitter.
-    consumer_secret: "XXX", // from Twitter.
-    access_token_key: "XXX", // from your User (oauth_token)
-    access_token_secret: "XXX" // from your User (oauth_token_secret)
+    consumer_key: process.env.consumer_key, // from Twitter.
+    consumer_secret: process.env.consumer_secret, // from Twitter.
+    access_token_key: process.env.access_token_key, // from your User (oauth_token)
+    access_token_secret: process.env.access_token_secret // from your User (oauth_token_secret)
 });
 
 client.get("account/verify_credentials")
