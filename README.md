@@ -18,6 +18,8 @@ Install the dependencies:
 > npm install
 ```
 
+Change env file name from copy.env to .env
+
 User authentication requires:
 - `consumer_key`
 - `consumer_secret`
