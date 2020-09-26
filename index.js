@@ -26,7 +26,7 @@ const isMutual = (tweet) => {
 }
 
 const isIgnored = (tweet) => {
-    return tweet.match(new RegExp(/kpop|korea|stan|ig|drop|link|ig|army/g));
+    return tweet.match(new RegExp(/kpop|korea|stan|ig|drop|link|ig|army|m(\d+)|pic\.twitter\.com/g));
 }
 
 async function getTweets(userlist) {
