@@ -120,13 +120,13 @@ autoFollow ? retweeters() : ''
 autoFollow ? follow() : ''
 
 cron.schedule('*/5 * * * *', () => {
-    console.log(color('=== FIND MUTUAL BASE ===', 'green'))
+    console.log(color('=== FIND MUTUAL IN BASE ===', 'green'))
     getTweets(listUser)
 });
 
 if (autoFollow) {
     cron.schedule('*/40 * * * *', () => {
-        console.log(color('=== AUTO FOLLOW RETWEET ===', 'green'))
+        console.log(color('=== AUTO FOLLOW RETWEETERS ===', 'green'))
         follow()
     });
 }
