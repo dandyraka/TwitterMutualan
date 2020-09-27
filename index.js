@@ -4,7 +4,7 @@ const color = require('./utils/color');
 const db = require('./db');
 require('dotenv').config()
 
-const autoFollow = true; // true = on | false = off
+const autoFollow = process.env.auto_follow.toUpperCase();
 
 const client = new Twitter({
     subdomain: "api", // "api" is the default (change for other subdomains)
@@ -116,15 +116,15 @@ const listUser = [
     'mutualanbase'
 ];
 getTweets(listUser)
-autoFollow ? retweeters() : ''
-autoFollow ? follow() : ''
+autoFollow === "ON" ? retweeters() : ''
+autoFollow === "ON" ? follow() : ''
 
 cron.schedule('*/5 * * * *', () => {
     console.log(color('=== FIND MUTUAL IN BASE ===', 'green'))
     getTweets(listUser)
 });
 
-if (autoFollow) {
+if (autoFollow === "ON") {
     cron.schedule('*/40 * * * *', () => {
         console.log(color('=== AUTO FOLLOW RETWEETERS ===', 'green'))
         follow()
@@ -138,7 +138,7 @@ cron.schedule('*/10 * * * *', async () => {
     retweetList.forEach(async (retweets) => await client.post("statuses/unretweet/" + retweets.id).catch(error => error));
     
     await db.clearAllTweet()
-    if (autoFollow) {
+    if (autoFollow === "ON") {
         await db.removeUserByStatus("error")
         retweeters()
     }
