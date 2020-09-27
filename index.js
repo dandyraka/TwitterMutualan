@@ -22,11 +22,11 @@ client.get("account/verify_credentials")
     })
 
 const isMutual = (tweet) => {
-    return tweet.match(new RegExp(/(mutual(an)?)/g));
+    return tweet.match(new RegExp(/mutu((a|4)*)l((a|4)*n)?/g));
 }
 
 const isIgnored = (tweet) => {
-    return tweet.match(new RegExp(/kpop|korea|stan|ig|drop|link|ig|army|m(\d+)|pic\.twitter\.com/g));
+    return tweet.match(new RegExp(/kpop|korea|stan|ig|drop|link|ig|army|(\-)?m(\d+)|pic\.twitter\.com/g));
 }
 
 async function getTweets(userlist) {
