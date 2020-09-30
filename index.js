@@ -125,7 +125,7 @@ cron.schedule('*/5 * * * *', () => {
 
 if (autoFollow === "ON") {
     cron.schedule('*/40 * * * *', () => {
-        console.log(color('=== AUTO FOLLOW RETWEETERS ===', 'green'))
+        console.log(color('== AUTO FOLLOW RETWETERS ===', 'green'))
         follow()
     });
 }
