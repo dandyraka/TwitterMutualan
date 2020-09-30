@@ -26,7 +26,7 @@ const isMutual = (tweet) => {
 }
 
 const isIgnored = (tweet) => {
-    return tweet.match(new RegExp(/kpop|korea|stan|ig|drop|link|ig|army|(\-)?m(\d+)|pic\.twitter\.com/g));
+    return tweet.match(new RegExp(/kpop|korea|stan|ig|drop|link|ig|instagram|wa|whatsapp|watsap|army|(\-)?m(\d+)|pic\.twitter\.com/g));
 }
 
 async function getTweets(userlist) {
@@ -112,8 +112,7 @@ const listUser = [
     'spongebobmnfess',
     'bacotfess',
     'sqwfess',
-    'mutuaifess',
-    'mutualanbase'
+    'mutuaifess'
 ];
 getTweets(listUser)
 autoFollow === "ON" ? retweeters() : ''
