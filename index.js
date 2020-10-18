@@ -103,7 +103,6 @@ async function follow() {
 }
 
 const listUser = [
-    "subtanyarl", 
     "MUTUALANDFESS",
     "MUTUALANDFESS1",
     'menfesssyg', 
