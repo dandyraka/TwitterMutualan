@@ -112,7 +112,7 @@ const listUser = [
     'spongebobmnfess',
     'bacotfess',
     'sqwfess',
-    'mutuaifess'
+    'mutualan_base'
 ];
 getTweets(listUser)
 autoFollow === "ON" ? retweeters() : ''
