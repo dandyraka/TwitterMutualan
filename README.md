@@ -40,4 +40,4 @@ Usage
 ```
 
 ## Support Me
-Support me on [Saweria](https://saweria.co/jnckmedia)
+Support me on [Saweria](https://saweria.co/xtrvts)
