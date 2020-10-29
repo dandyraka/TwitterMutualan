@@ -7,12 +7,12 @@ require('dotenv').config()
 const autoFollow = process.env.auto_follow.toUpperCase();
 
 const client = new Twitter({
-    subdomain: "api", // "api" is the default (change for other subdomains)
-    version: "1.1", // version "1.1" is the default (change for other subdomains)
-    consumer_key: process.env.consumer_key, // from Twitter.
-    consumer_secret: process.env.consumer_secret, // from Twitter.
-    access_token_key: process.env.access_token_key, // from your User (oauth_token)
-    access_token_secret: process.env.access_token_secret // from your User (oauth_token_secret)
+    subdomain: "api",
+    version: "1.1",
+    consumer_key: process.env.consumer_key,
+    consumer_secret: process.env.consumer_secret,
+    access_token_key: process.env.access_token_key,
+    access_token_secret: process.env.access_token_secret
 });
 
 client.get("account/verify_credentials")
@@ -26,7 +26,7 @@ const isMutual = (tweet) => {
 }
 
 const isIgnored = (tweet) => {
-    return tweet.match(new RegExp(/kpop|korea|stan|ig|drop|link|ig|instagram|wa|whatsapp|watsap|army|(\-)?m(\d+)|pic\.twitter\.com/g));
+    return tweet.match(new RegExp(/kpop|korea|stan|ig|drop|link|ig|instagram|wa|whatsapp|watsap|army|(\-)?m\-?(\d+)|pic\.twitter\.com/g));
 }
 
 async function getTweets(userlist) {
@@ -45,7 +45,11 @@ async function getTweets(userlist) {
                 if (isIgnored(tweetText)) return console.log(color('[IGNORED]', 'red'), 'Mengandung kata cringe')
 
                 const doRetweet = await client.post("statuses/retweet/" + tweetID).catch(error => error);
-                if (doRetweet.retweeted) console.log(color('[RETWEETED]', 'green'), '=>', color(tweetID))
+                if (doRetweet.retweeted) {
+                    console.log(color('[RETWEETED]', 'green'), '=>', color(tweetID))
+                } else {
+                    console.log(color('[RETWEET_ERROR]', 'red'), '=>', color("Make sure the permission is Read and Write or try Regenerate Token"))
+                }
             } else {
                 console.log(color('[MUTUAL_NOTFOUND]', 'red'), 'on', color(user, 'yellow'))
             }
