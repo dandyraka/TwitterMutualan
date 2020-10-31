@@ -49,6 +49,7 @@ async function getTweets(userlist) {
                     console.log(color('[RETWEETED]', 'green'), '=>', color(tweetID))
                 } else {
                     console.log(color('[RETWEET_ERROR]', 'red'), '=>', color("Make sure the permission is Read and Write or try Regenerate Token"))
+                    proccess.exit();
                 }
             } else {
                 console.log(color('[MUTUAL_NOTFOUND]', 'red'), 'on', color(user, 'yellow'))
