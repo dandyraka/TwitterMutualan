@@ -5,6 +5,9 @@ const db = require('./db');
 require('dotenv').config()
 
 const autoFollow = process.env.auto_follow.toUpperCase();
+const cron_findMutual = process.env.cron_findMutual;
+const cron_autoFollow = process.env.cron_autoFollow;
+const cron_reset = process.env.cron_reset;
 
 const client = new Twitter({
     subdomain: "api",
@@ -44,12 +47,12 @@ async function getTweets(userlist) {
 
                 if (isIgnored(tweetText)) return console.log(color('[IGNORED]', 'red'), 'Mengandung kata cringe')
 
-                const doRetweet = await client.post("statuses/retweet/" + tweetID).catch(error => error);
+                const doRetweet = await client.post(`statuses/retweet/${tweetID}`).catch(error => error);
                 if (doRetweet.retweeted) {
                     console.log(color('[RETWEETED]', 'green'), '=>', color(tweetID))
                 } else {
                     console.log(color('[RETWEET_ERROR]', 'red'), '=>', color("Make sure the permission is Read and Write or try Regenerate Token"))
-                    proccess.exit();
+                    process.exit();
                 }
             } else {
                 console.log(color('[MUTUAL_NOTFOUND]', 'red'), 'on', color(user, 'yellow'))
@@ -73,7 +76,7 @@ async function retweeters() {
         const tweet = await db.getAllTweet()
         tweet.forEach(async (tweets) => {
             const tweetID = tweets.id
-            const get_retweeters = await client.get("statuses/retweets/" + tweetID).catch(error => error);
+            const get_retweeters = await client.get(`statuses/retweets/${tweetID}`).catch(error => error);
             get_retweeters.forEach(async function (retweetersID) {
                 const retweeterID = retweetersID.user.id_str
                 const isSaved = await db.findUser(retweeterID)
@@ -122,23 +125,23 @@ getTweets(listUser)
 autoFollow === "ON" ? retweeters() : ''
 autoFollow === "ON" ? follow() : ''
 
-cron.schedule('*/5 * * * *', () => {
+cron.schedule(`*/${cron_findMutual} * * * *`, () => {
     console.log(color('=== FIND MUTUAL IN BASE ===', 'green'))
     getTweets(listUser)
 });
 
 if (autoFollow === "ON") {
-    cron.schedule('*/40 * * * *', () => {
+    cron.schedule(`*/${cron_autoFollow} * * * *`, () => {
         console.log(color('=== AUTO FOLLOW RETWEETERS ===', 'green'))
         follow()
     });
 }
 
-cron.schedule('*/10 * * * *', async () => {
+cron.schedule(`*/${cron_reset} * * * *`, async () => {
     console.log(color('=== RESET DATABASE ===', 'green'))
     //Unretweet
     const retweetList = await db.getAllTweet()
-    retweetList.forEach(async (retweets) => await client.post("statuses/unretweet/" + retweets.id).catch(error => error));
+    retweetList.forEach(async (retweets) => await client.post(`statuses/unretweet/${retweets.id}`).catch(error => error));
     
     await db.clearAllTweet()
     if (autoFollow === "ON") {
