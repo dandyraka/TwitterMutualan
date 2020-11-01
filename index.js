@@ -4,6 +4,20 @@ const color = require('./utils/color');
 const db = require('./db');
 require('dotenv').config()
 
+//Banner
+console.log(color(`%c _______       _ _   _            __  __       _               _             
+|__   __|     (_) | | |          |  \\/  |     | |             | |            
+   | |_      ___| |_| |_ ___ _ __| \\  / |_   _| |_ _   _  __ _| | __ _ _ __  
+   | \\ \\ /\\ / / | __| __/ _ \\ '__| |\\/| | | | | __| | | |/ _\` | |/ _\` | '_ \\ 
+   | |\\ V  V /| | |_| ||  __/ |  | |  | | |_| | |_| |_| | (_| | | (_| | | | |
+   |_| \\_/\\_/ |_|\\__|\\__\\___|_|  |_|  |_|\\__,_|\\__|\\__,_|\\__,_|_|\\__,_|_| |_|\n\n`, 'cyan'), "font-family:monospace");
+
+if (!process.env.consumer_key || !process.env.consumer_secret || !process.env.access_token_key || !process.env.access_token_secret) {
+    console.log(color('[!] fill all authentication requires on .env', 'red'));
+    process.exit();
+}
+console.log(color('[!] Make sure the permission is Read and Write', 'red'));
+
 const autoFollow = process.env.auto_follow.toUpperCase();
 const cron_findMutual = process.env.cron_findMutual;
 const cron_autoFollow = process.env.cron_autoFollow;
@@ -17,6 +31,8 @@ const client = new Twitter({
     access_token_key: process.env.access_token_key,
     access_token_secret: process.env.access_token_secret
 });
+
+console.log(color('\n\nStarting...', 'green'));
 
 client.get("account/verify_credentials")
     .catch((e) => {
@@ -48,12 +64,7 @@ async function getTweets(userlist) {
                 if (isIgnored(tweetText)) return console.log(color('[IGNORED]', 'red'), 'Mengandung kata cringe')
 
                 const doRetweet = await client.post(`statuses/retweet/${tweetID}`).catch(error => error);
-                if (doRetweet.retweeted) {
-                    console.log(color('[RETWEETED]', 'green'), '=>', color(tweetID))
-                } else {
-                    console.log(color('[RETWEET_ERROR]', 'red'), '=>', color("Make sure the permission is Read and Write or try Regenerate Token"))
-                    process.exit();
-                }
+                if (doRetweet.retweeted) console.log(color('[RETWEETED]', 'green'), '=>', color(tweetID))
             } else {
                 console.log(color('[MUTUAL_NOTFOUND]', 'red'), 'on', color(user, 'yellow'))
             }
