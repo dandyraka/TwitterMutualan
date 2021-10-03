@@ -74,12 +74,14 @@ async function getTweets(userlist) {
                 await db.addTweet(tweetID);
                 console.log(color('[MUTUAL_FOUND]', 'green'), 'on', color(user, 'yellow'));
 
-                if (isIgnored(tweetText)) return console.log(color('[IGNORED]', 'red'), 'Mengandung kata cringe');
-
-                const doRetweet = await client.post(`statuses/retweet/${tweetID}`).catch(() => {
-                    return `${color('[ERROR]', 'red')} failed to retweet ${color(tweetID, 'yellow')}`;
-                });
-                (doRetweet.retweeted) ? console.log(color('[RETWEETED]', 'green'), '=>', color(tweetID)) : "";
+                if (isIgnored(tweetText)) {
+                    console.log(color('[IGNORED]', 'red'), 'Mengandung kata cringe');
+                } else {
+                    const doRetweet = await client.post(`statuses/retweet/${tweetID}`).catch(() => {
+                        return `${color('[ERROR]', 'red')} failed to retweet ${color(tweetID, 'yellow')}`;
+                    });
+                    (doRetweet.retweeted) ? console.log(color('[RETWEETED]', 'green'), '=>', color(tweetID)) : "";
+                }
             } else {
                 console.log(color('[MUTUAL_NOTFOUND]', 'red'), 'on', color(user, 'yellow'));
             }
