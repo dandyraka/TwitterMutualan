@@ -2,7 +2,8 @@
 node_modules/
 
 # json database
-db/*.json
+db/*
+!db/index.js
 
 # lock files
 package-lock.json

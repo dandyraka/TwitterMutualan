@@ -6,14 +6,9 @@ const db = require('./db');
 const delay = require('delay');
 const cliSpinners = require('cli-spinners');
 const ora = require('ora');
+const figlet = require('figlet');
 
-//Banner
-console.log(color(`%c _______       _ _   _            __  __       _               _             
-|__   __|     (_) | | |          |  \\/  |     | |             | |            
-   | |_      ___| |_| |_ ___ _ __| \\  / |_   _| |_ _   _  __ _| | __ _ _ __  
-   | \\ \\ /\\ / / | __| __/ _ \\ '__| |\\/| | | | | __| | | |/ _\` | |/ _\` | '_ \\ 
-   | |\\ V  V /| | |_| ||  __/ |  | |  | | |_| | |_| |_| | (_| | | (_| | | | |
-   |_| \\_/\\_/ |_|\\__|\\__\\___|_|  |_|  |_|\\__,_|\\__|\\__,_|\\__,_|_|\\__,_|_| |_|\n\n`, 'cyan'), "font-family:monospace");
+console.log(color(figlet.textSync("TwitterMutualan"), 'pink'));
 
 if (!process.env.consumer_key || !process.env.consumer_secret || !process.env.access_token_key || !process.env.access_token_secret) {
     console.log(color('[!] fill all authentication requires on .env', 'red'));
@@ -42,7 +37,7 @@ const client = new Twitter({
     access_token_secret: process.env.access_token_secret
 });
 
-console.log(color('\n\nStarting...', 'cyan'));
+console.log(color('\nStarting...', 'cyan'));
 console.log(`${color(`Total base: ${array_base.length}`, 'cyan')}\n`);
 
 client.get("account/verify_credentials").catch((e) => {
@@ -63,6 +58,7 @@ function spiner(){
         spinner.start();
     }, 1000);
 }
+
 async function getTweets(userlist) {
     for (const user of userlist) {
         try {
@@ -99,7 +95,6 @@ async function getTweets(userlist) {
             }
         }
     }
-    //console.log(color('Delay...', 'cyan'));
     spiner();
 }
 
@@ -121,7 +116,6 @@ async function retweeters() {
     } catch (e) {
         console.log(color('[ERROR]', 'red'), e);
     }
-
 }
 
 async function follow() {
@@ -146,7 +140,6 @@ async function follow() {
     } catch (e) {
         console.log(color('[ERROR]', 'red'), e);
     }
-
 }
 
 getTweets(array_base);
