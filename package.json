@@ -18,9 +18,12 @@
   "license": "ISC",
   "dependencies": {
     "chalk": "^4.1.0",
-    "dotenv": "^8.2.0",
+    "cli-spinners": "^2.6.1",
+    "delay": "^5.0.0",
+    "dotenv": "^10.0.0",
     "lowdb": "^1.0.0",
-    "node-cron": "^2.0.3",
-    "twitter-lite": "^0.14.0"
+    "node-cron": "^3.0.0",
+    "ora": "^5.1.0",
+    "twitter-lite": "^1.1.0"
   }
 }
