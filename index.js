@@ -50,7 +50,7 @@ const isMutual = (tweet) => {
 }
 
 const isIgnored = (tweet) => {
-    return tweet.match(new RegExp(/kpop|korea|stan|ig|drop|link|ig|instagram|wa|whatsapp|watsap|army|(\-)?m\-?(\d+)|pic\.twitter\.com/gi));
+    return tweet.match(new RegExp(/fandom|kpop|korea|stan|ig|drop|link|ig|instagram|wa|whatsapp|watsap|army|(\-)?m\-?(\d+)|pic\.twitter\.com/gi));
 }
 
 function spiner(){
@@ -103,18 +103,22 @@ async function getTweets(userlist) {
 async function retweeters() {
     try {
         const tweet = await db.getAllTweet();
-        await tweet.forEach(async (tweets) => {
-            const tweetID = tweets.id;
-            const get_retweeters = await client.get(`statuses/retweets/${tweetID}`).catch(() => {
-                return `${color('[ERROR]', 'red')} failed to get retweeters`;
+        if (Array.isArray(tweet)) {
+            await tweet.forEach(async (tweets) => {
+                const tweetID = tweets.id;
+                const get_retweeters = await client.get(`statuses/retweets/${tweetID}`).catch(() => {
+                    return `${color('[ERROR]', 'red')} failed to get retweeters`;
+                });
+                get_retweeters.forEach(async function (retweetersID) {
+                    const retweeterID = retweetersID.user.id_str;
+                    const isSaved = await db.findUser(retweeterID);
+                    if (!isSaved) await db.addUser(retweeterID, 'belum');
+                })
+                await delay(2000);
             });
-            get_retweeters.forEach(async function (retweetersID) {
-                const retweeterID = retweetersID.user.id_str;
-                const isSaved = await db.findUser(retweeterID);
-                if (!isSaved) await db.addUser(retweeterID, 'belum');
-            })
-            await delay(2000);
-        });
+        } else {
+            console.log(color('[ERROR]', 'red'), 'Belum ada yang ngeretweet');
+        }
     } catch (e) {
         console.log(color('[ERROR]', 'red'), e);
     }
