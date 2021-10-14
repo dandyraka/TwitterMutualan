@@ -62,7 +62,7 @@ function spiner(){
 async function getTweets(userlist) {
     for (const user of userlist) {
         try {
-            const tweets = await client.get("statuses/user_timeline", { screen_name: user, count: 1 }).catch(() => {
+            const tweets = await client.get("statuses/user_timeline", { screen_name: user, count: 1, include_rts: false }).catch(() => {
                 return `${color('[ERROR]', 'red')} ${color(user, 'yellow')} not found!!`;
             });
             const tweetID = tweets[0].id_str;
