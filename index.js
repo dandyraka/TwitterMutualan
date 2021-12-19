@@ -17,6 +17,7 @@ if (!process.env.consumer_key || !process.env.consumer_secret || !process.env.ac
 console.log(color('[!] Make sure the permission is Read and Write', 'red'));
 
 const autoFollow = process.env.auto_follow.toUpperCase();
+const autoLike = process.env.auto_like.toUpperCase();
 const cron_findMutual = process.env.cron_findMutual;
 const cron_autoFollow = process.env.cron_autoFollow;
 const cron_reset = process.env.cron_reset;
@@ -148,6 +149,25 @@ async function follow() {
     }
 }
 
+async function like() {
+    try {
+        const homeTimeline = await client.get('statuses/home_timeline').catch(() => {
+            return `${color('[ERROR]', 'red')} ${color('Timeline tweet', 'yellow')} not found!!`;
+        });
+        homeTimeline.forEach(async (tweets) => {
+            if(!tweets.favorited) {
+                const doLike = await client.post('favorites/create', { id: tweets.id_str }).catch(error => error);
+                (doLike.favorited) ? console.log(color('[LIKED]', 'green'), '=>', color(tweets.id_str)) : "";
+            } else {
+                console.log(color('[ERROR]', 'red'), 'ALREADY_LIKED', '=>', color(tweets.id_str, 'yellow'));
+            }
+            await delay(10000);
+        })
+    } catch (e) {
+        console.log(color('[ERROR]', 'red'), e);
+    }
+}
+
 getTweets(array_base);
 autoFollow === "ON" ? retweeters() : '';
 autoFollow === "ON" ? follow() : '';
@@ -163,6 +183,14 @@ if (autoFollow === "ON") {
         spinner.succeed();
         console.log(color('=== AUTO FOLLOW RETWEETERS ===', 'pink'));
         follow();
+    });
+}
+
+if (autoLike === "ON") {
+    cron.schedule(`0 */35 * * * *`, () => {
+        spinner.succeed();
+        console.log(color('=== AUTO LIKE TWEETS ===', 'pink'));
+        like();
     });
 }
 
