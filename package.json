@@ -20,7 +20,7 @@
     "chalk": "^4.1.0",
     "cli-spinners": "^2.6.1",
     "delay": "^5.0.0",
-    "dotenv": "^10.0.0",
+    "dotenv": "^14.3.0",
     "figlet": "^1.5.2",
     "lowdb": "^1.0.0",
     "node-cron": "^3.0.0",
