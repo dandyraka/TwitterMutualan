@@ -20,6 +20,7 @@ const autoFollow = process.env.auto_follow.toUpperCase();
 const autoLike = process.env.auto_like.toUpperCase();
 const cron_findMutual = process.env.cron_findMutual;
 const cron_autoFollow = process.env.cron_autoFollow;
+const cron_autoLike = process.env.cron_autoLike;
 const cron_reset = process.env.cron_reset;
 const base_list = process.env.base_target;
 const array_base = base_list.split('|');
@@ -41,10 +42,16 @@ const client = new Twitter({
 console.log(color('\nStarting...', 'cyan'));
 console.log(`${color(`Total base: ${array_base.length}`, 'cyan')}\n`);
 
-client.get("account/verify_credentials").catch((e) => {
+client.get("account/verify_credentials")
+  .then(results => {
+    console.log(`Logged in as ${color(`@${results.screen_name}`, 'yellow')}`);
+  })
+  .catch(console.error);
+
+/*client.get("account/verify_credentials").catch((e) => {
     if (e.errors[0].code) console.log(color('[ERROR]', 'red'), e.errors[0].message) 
     process.exit(1)
-})
+})*/
 
 const isMutual = (tweet) => {
     return tweet.match(new RegExp(/mutu((a|4)*)l((a|4)*n)?/gi));
@@ -187,7 +194,7 @@ if (autoFollow === "ON") {
 }
 
 if (autoLike === "ON") {
-    cron.schedule(`0 */35 * * * *`, () => {
+    cron.schedule(`0 */${cron_autoLike} * * * *`, () => {
         spinner.succeed();
         console.log(color('=== AUTO LIKE TWEETS ===', 'pink'));
         like();
