@@ -6,6 +6,8 @@ Mutualan tanpa ribet
 - Auto unretweet agar profile tidak spam terlalu banyak retweet
 ```
 
+---
+
 ### Install
 Clone this project
 ```bash
@@ -18,7 +20,7 @@ Install the dependencies:
 > npm install
 ```
 
-Change env file name from copy.env to .env
+Rename env file name from `copy.env` to `.env`
 
 User authentication requires:
 - `consumer_key`
@@ -26,7 +28,7 @@ User authentication requires:
 - `access_token_key`
 - `access_token_secret`
 
-Get it on [https://apps.twitter.com/](https://apps.twitter.com), put in .env
+Get it on [https://apps.twitter.com/](https://apps.twitter.com), put in .env (Use API `v1.1` not `v2`)
 ```
 consumer_key=YOUR_KEY
 consumer_secret=YOUR_SECRET
