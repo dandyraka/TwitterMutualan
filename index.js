@@ -43,15 +43,13 @@ console.log(color('\nStarting...', 'cyan'));
 console.log(`${color(`Total base: ${array_base.length}`, 'cyan')}\n`);
 
 client.get("account/verify_credentials")
-  .then(results => {
-    console.log(`Logged in as ${color(`@${results.screen_name}`, 'yellow')}`);
-  })
-  .catch(console.error);
-
-/*client.get("account/verify_credentials").catch((e) => {
-    if (e.errors[0].code) console.log(color('[ERROR]', 'red'), e.errors[0].message) 
-    process.exit(1)
-})*/
+    .then(results => {
+        console.log(`Logged in as ${color(`@${results.screen_name}`, 'yellow')}`);
+    })
+    .catch((e) => {
+        if (e.errors[0].code) console.log(color('[ERROR]', 'red'), e.errors[0].message)
+        process.exit(1)
+    })
 
 const isMutual = (tweet) => {
     return tweet.match(new RegExp(/mutu((a|4)*)l((a|4)*n)?/gi));
@@ -112,7 +110,7 @@ async function retweeters() {
     try {
         const tweet = await db.getAllTweet();
         if (Array.isArray(tweet)) {
-            await tweet.forEach(async (tweets) => {
+            tweet.forEach(async (tweets) => {
                 const tweetID = tweets.id;
                 const get_retweeters = await client.get(`statuses/retweets/${tweetID}`).catch(() => {
                     return `${color('[ERROR]', 'red')} failed to get retweeters`;
